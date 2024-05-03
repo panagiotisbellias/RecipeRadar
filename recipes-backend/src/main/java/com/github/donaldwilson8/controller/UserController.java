@@ -4,6 +4,7 @@ import com.github.donaldwilson8.model.User;
 import com.github.donaldwilson8.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,10 +13,12 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, BCryptPasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping
@@ -32,6 +35,7 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody User user) {
         try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             User newUser = userService.createUser(user);
             return ResponseEntity.ok(newUser);
         } catch (Exception e) {
@@ -42,6 +46,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUserProfile(@PathVariable String id, @RequestBody User user) {
         try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
             User updatedUser = userService.updateUser(user);
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
